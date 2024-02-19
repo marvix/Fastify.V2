@@ -1,0 +1,84 @@
+version: '3.9'
+
+networks:
+  fastify.v2:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.13.0/24
+
+
+services:
+  front:
+    container_name: ${PROJECT_NAME}-front
+    depends_on:
+      - mongodb
+      - api
+    #    working_dir: /front
+    build:
+      context: .
+      dockerfile: servers/front/Dockerfile
+      target: ${NODE_ENV}
+    volumes:
+      - ./src/front:/front
+    ports:
+      - "3001:3001"
+    networks:
+      fastify.v2:
+        ipv4_address: 172.16.13.41
+  api:
+    container_name: ${PROJECT_NAME}-api
+#    working_dir: /api/app
+    depends_on:
+      - mongodb
+    build:
+      context: .
+      dockerfile: servers/api/Dockerfile
+      target: ${NODE_ENV}
+    volumes:
+        - ./src/api/app:/api/app
+    ports:
+       - "3000:3000"
+    networks:
+      fastify.v2:
+        ipv4_address: 172.16.13.42
+  mongodb:
+    container_name: ${PROJECT_NAME}-mongo
+    image: mongo:7.0.5
+    volumes:
+      - ./servers/mongo/data:/mongo/data
+      - ./servers/mongo/mongod.conf:/mongo/mongod.conf
+      - ./servers/mongo/log:/mongo/log
+      - ./servers/mongo.logrotate:/etc/logrotate.d/mongo.logrotate
+      - ./servers/mongo/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: my_will
+      MONGODB_DATA_DIR: /mongo/data/db
+    networks:
+      fastify.v2:
+  caddy:
+    container_name: ${PROJECT_NAME}-caddy
+    restart: unless-stopped
+#    image: caddy:2.7.6-alpine
+    build:
+      context: .
+      dockerfile: servers/caddy/Dockerfile
+#      target: ${NODE_ENV}
+#    cap_add:
+#      - NET_ADMIN
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+      - '2019:2019'
+    volumes:
+      - ./servers/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./servers/caddy/caddy_data:/data
+      - ./servers/caddy/caddy_config:/config
+    networks:
+      fastify.v2:

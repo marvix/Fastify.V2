@@ -1,0 +1,21 @@
+FROM node:21-alpine3.18 as base
+RUN apk update
+RUN apk upgrade
+
+FROM base as development
+ENV NODE_ENV=development
+
+
+WORKDIR /api
+COPY src/api/ ./
+
+RUN npm install npm -g --verbose
+RUN npm install --verbose
+RUN npm install -g nodemon --verbose
+USER node
+
+#CMD [ -d "node_modules" ] && npm run watch || npm ci && npm run watch
+CMD ["npm", "run", watch"]
+
+# If you are building your code for production
+#RUN npm ci --only=productio

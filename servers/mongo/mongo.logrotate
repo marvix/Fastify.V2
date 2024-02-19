@@ -1,0 +1,30 @@
+# rotate log every day
+daily
+
+# or if size limit exceeded
+size 0.1M
+
+# number of rotations to keep
+rotate 7
+
+# don't error if log is missing
+missingok
+
+# don't rotate if empty
+notifempty
+
+# compress rotated log file
+compress
+
+# permissions of rotated logs
+create 644 SOMEUSER SOMEGROUP
+
+# run post-rotate once per rotation, not once per file (see 'man logrotate')
+sharedscripts
+
+# 1. Signal to MongoDB to start a new log file.
+# 2. Delete the empty 0-byte files left from compression.
+postrotate
+    /bin/kill -SIGUSR1 $(cat /SOMEDIR/PIDFILE.pid 2> /dev/null) > /dev/null 2>&1
+    find /SOMEDIR/ -size 0c -delete
+  endscript

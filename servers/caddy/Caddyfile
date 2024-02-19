@@ -1,0 +1,14 @@
+#https://github.com/Shyam-Chen/Fastify-Starter/blob/main/Caddyfile
+{
+	#debug
+	local_certs
+    auto_https disable_redirects
+    admin 0.0.0.0:2019
+}
+
+mywill.devi {
+        encode gzip
+        reverse_proxy front:3001
+
+}
+
