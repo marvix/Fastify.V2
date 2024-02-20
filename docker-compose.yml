@@ -37,7 +37,7 @@ services:
       dockerfile: servers/api/Dockerfile
       target: ${NODE_ENV}
     volumes:
-        - ./src/api/app:/api/app
+      - ./src/api/app:/api/app
     ports:
        - "3000:3000"
     networks:

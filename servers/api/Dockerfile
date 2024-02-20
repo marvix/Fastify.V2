@@ -1,27 +1,29 @@
-#FROM node:21-alpine3.18 as base
-#WORKDIR /api
-#COPY src/api/ ./
-#RUN npm install --verbose
-#RUN npm install nodemon -g --verbose
-#CMD ["npm", "run", "dev" ,"-ddd"]
-
-
 FROM node:21-alpine3.18 as base
+#update & upgrade OS
 RUN apk update
 RUN apk upgrade
+#set dev env
 FROM base as development
 ENV NODE_ENV=development
-WORKDIR /api
 
+#set workdir & copy package.json
+WORKDIR /api
 COPY src/api/package.json ./
 
-RUN npm install npm -g --verbose
-RUN npm install --verbose -g
+#install npm and nodemon and package.json
+RUN npm install --verbose
 RUN npm install -g nodemon --verbose
-ENV PATH /api/node_modules/.bin:$PATH
-COPY src/api/app ./app
+
+
+#change workdir to /api/app and copy local app file
+WORKDIR /api/app
+COPY src/api/app ./
+
+#Start npm dev
+CMD ["npm", "run", "dev" ,"-ddd"]
+
 
 #USER node
 #CMD [ -d "node_modules" ] && npm run dev || npm ci && npm run dev
 #CMD [ -d "node_modules" ]
-CMD ["npm", "run", "dev" ,"-ddd"]
+
